@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>SI-MASJID — Sistem Informasi Penjadwalan Khotib & TV Signage</title>
+
+  <!-- PWA & Mobile Meta Tags -->
+  <link rel="manifest" href="./manifest.json"/>
+  <meta name="theme-color" content="#001710"/>
+  <meta name="description" content="Sistem Informasi Jadwal Khotib, Bilal, & TV Display Signage Masjid Al-Hikmah"/>
+  <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
+
+  <!-- Google Fonts: Plus Jakarta Sans & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Amiri:ital,wght@0,700;1,400&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS CDN with Sacred Emerald Tokens -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: "#001710",
+            "surface-dim": "#00120b",
+            "surface-container": "#08241b",
+            "surface-container-high": "#142f25",
+            "surface-container-highest": "#1f3a30",
+            primary: "#f2ca50",
+            "primary-container": "#d4af37",
+            "on-primary": "#3c2f00",
+            "on-primary-container": "#554300",
+            secondary: "#d7c4a5",
+            "secondary-fixed": "#f4e0c0",
+            tertiary: "#bbd5c7",
+            "tertiary-container": "#a0b9ab",
+            "on-surface": "#cbe9db",
+            "on-surface-variant": "#d0c5af",
+            outline: "#99907c",
+            "outline-variant": "#4d4635",
+            error: "#ffb4ab",
+            "error-container": "#93000a"
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            arabic: ['Amiri', 'serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="./css/style.css"/>
+</head>
+
+<body class="bg-surface text-on-surface antialiased min-h-screen selection:bg-primary selection:text-on-primary">
+
+  <!-- ===================================================================== -->
+  <!-- 1. TOP RESPONSIVE APPLICATION BAR                                     -->
+  <!-- ===================================================================== -->
+  <header id="app-navbar" class="fixed top-0 w-full z-50 bg-surface-container/90 backdrop-blur-xl border-b border-[#1E4D3E]/50 shadow-md">
+    <div class="h-16 w-full px-4 sm:px-6 flex items-center justify-between gap-3">
+      <!-- Mosque Branding Left -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('tv')">
+        <div class="w-9 h-9 rounded-xl bg-surface-container-high border border-[#1E4D3E] p-1.5 flex items-center justify-center shadow-inner">
+          <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">mosque</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-bold text-base text-secondary-fixed tracking-tight leading-none">SI-MASJID</span>
+          <span class="text-[10px] text-primary uppercase font-semibold tracking-wider mt-0.5">Al-Hikmah Registry</span>
+        </div>
+      </div>
+
+      <!-- Sync Status Badge -->
+      <div class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high border border-[#1E4D3E]/40">
+        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+        <span class="text-xs text-on-surface-variant font-medium">Server Sinkron • Realtime</span>
+      </div>
+
+      <!-- Navigation Tabs (Instant 0 ms switching) -->
+      <nav class="hidden lg:flex items-center gap-1 p-1 bg-surface-dim rounded-xl border border-[#1E4D3E]/40">
+        <button onclick="switchView('tv')" data-nav-target="tv" class="px-3.5 py-1.5 rounded-lg text-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors">
+          TV Digital Signage
+        </button>
+        <button onclick="switchView('jamaah')" data-nav-target="jamaah" class="px-3.5 py-1.5 rounded-lg text-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors">
+          Portal Jamaah
+        </button>
+        <button onclick="switchView('petugas')" data-nav-target="petugas" class="px-3.5 py-1.5 rounded-lg text-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors">
+          Konfirmasi Petugas
+        </button>
+        <button onclick="switchView('admin')" data-nav-target="admin" class="px-3.5 py-1.5 rounded-lg text-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors">
+          Dashboard DKM
+        </button>
+      </nav>
+
+      <!-- Right Header Actions (Install PWA + Fullscreen) -->
+      <div class="flex items-center gap-2">
+        <!-- PWA Install Button (hidden until prompt triggers) -->
+        <button id="btn-pwa-install" style="display: none;" class="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-bold text-xs flex items-center gap-1.5 shadow-sm hover:bg-yellow-400 transition-colors">
+          <span class="material-symbols-outlined text-[16px]">download</span>
+          <span>Pasang App</span>
+        </button>
+
+        <!-- Fullscreen Button -->
+        <button onclick="toggleFullscreen()" title="Layar Penuh TV" class="w-9 h-9 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-secondary hover:text-primary transition-colors flex items-center justify-center border border-[#1E4D3E]/60">
+          <span class="material-symbols-outlined text-[20px]">fullscreen</span>
+        </button>
+
+        <!-- Mobile Menu Toggle Button (Drawer/Direct) -->
+        <div class="flex lg:hidden items-center gap-1 bg-surface-dim p-1 rounded-lg border border-[#1E4D3E]/40">
+          <button onclick="switchView('tv')" class="p-1.5 rounded text-secondary hover:text-primary text-xs" title="TV Display">🖥️</button>
+          <button onclick="switchView('jamaah')" class="p-1.5 rounded text-secondary hover:text-primary text-xs" title="Jamaah">📱</button>
+          <button onclick="switchView('petugas')" class="p-1.5 rounded text-secondary hover:text-primary text-xs" title="Petugas">📋</button>
+          <button onclick="switchView('admin')" class="p-1.5 rounded text-secondary hover:text-primary text-xs" title="Admin">🔐</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- 2. MAIN CONTAINER & MULTI-VIEW SPA                                    -->
+  <!-- ===================================================================== -->
+  <main class="w-full pt-16 min-h-screen">
+
+    <!-- ----------------------------------------------------------------- -->
+    <!-- VIEW 1: SMART TV DIGITAL SIGNAGE (16:9 Fullscreen Landscape)      -->
+    <!-- ----------------------------------------------------------------- -->
+    <section id="view-tv" class="view-section active w-full min-h-[calc(100vh-64px)] relative flex flex-col justify-between p-4 sm:p-6 lg:p-10 select-none overflow-hidden" style="background-color: #0A261D;">
+      <!-- Ambient Islamic Star Geometry Pattern -->
+      <div class="absolute inset-0 pointer-events-none opacity-20 overflow-hidden flex items-center justify-center">
+        <svg class="w-[140%] h-[140%] text-primary-container opacity-25" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 800 800">
+          <defs>
+            <pattern id="islamic-star-pattern" width="100" height="100" patternUnits="userSpaceOnUse">
+              <path d="M50 0 L65 35 L100 50 L65 65 L50 100 L35 65 L0 50 L35 35 Z" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.3"></path>
+              <path d="M0 0 L50 50 L100 0 M0 100 L50 50 L100 100" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.18"></path>
+              <circle cx="50" cy="50" r="14" fill="none" stroke="currentColor" stroke-width="0.6" opacity="0.2"></circle>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#islamic-star-pattern)"></rect>
+        </svg>
+      </div>
+
+      <!-- TV Screen Content Wrapper -->
+      <div class="flex flex-col flex-1 z-10 justify-between space-y-6">
+        
+        <!-- TV Header Bar -->
+        <div class="flex items-center justify-between bg-surface-container-high/90 backdrop-blur-md px-6 py-4 rounded-xl border border-[#1E4D3E] shadow-lg">
+          <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-lg bg-surface-dim p-2 flex items-center justify-center border border-[#1E4D3E] shadow-inner">
+              <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">mosque</span>
+            </div>
+            <div>
+              <div class="flex items-baseline space-x-2">
+                <h1 id="tv-masjid-nama" class="text-2xl lg:text-3xl font-extrabold text-secondary-fixed tracking-tight">MASJID JAMI' AL-HIKMAH</h1>
+                <span class="text-primary font-arabic text-xl font-bold">المسجد الحكمة</span>
+              </div>
+              <p id="tv-masjid-alamat" class="text-xs uppercase tracking-widest text-tertiary-container font-semibold mt-0.5">
+                JL. KH. HASYIM ASY'ARI, SUKAMAJU • KOTA JAKARTA PUSAT
+              </p>
+            </div>
+          </div>
+
+          <!-- Live Status Telemetry -->
+          <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2 bg-surface-container px-3.5 py-1.5 rounded-full border border-[#1E4D3E]/60 shadow-sm">
+              <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+              </span>
+              <span class="text-xs text-on-surface tracking-wider font-semibold">SIARAN LANGSUNG TV</span>
+            </div>
+            <div class="hidden sm:flex items-center space-x-2 bg-surface-container-highest px-3 py-1.5 rounded-full text-tertiary text-xs border border-[#1E4D3E]/40">
+              <span class="material-symbols-outlined text-primary text-sm">wifi</span>
+              <span class="text-on-surface-variant font-medium">TERHUBUNG SINKRON</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TV Hero Split (Current Clock & Next Prayer) -->
+        <div class="grid grid-cols-12 gap-6 items-stretch flex-1">
+          <!-- Left Hero Block: Big Digital Clock -->
+          <div class="col-span-12 lg:col-span-7 bg-surface-container/85 backdrop-blur-md rounded-2xl p-6 lg:p-8 flex flex-col justify-between border border-[#1E4D3E] shadow-xl relative overflow-hidden">
+            <div class="absolute -right-20 -top-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+            <div>
+              <div class="flex items-center space-x-2 mb-2">
+                <span class="material-symbols-outlined text-primary text-lg">schedule</span>
+                <span class="text-xs uppercase tracking-widest text-tertiary-container font-bold">WAKTU SEKARANG</span>
+                <span class="bg-surface-container-high text-primary px-2 py-0.5 rounded text-[10px] font-bold tracking-wider">WIB (UTC+7)</span>
+              </div>
+              <div class="flex items-baseline space-x-2 mt-2">
+                <span id="clock-hours-mins" class="text-7xl lg:text-9xl font-bold tracking-tight text-secondary-fixed drop-shadow-[0_4px_16px_rgba(242,202,80,0.2)]">11:24</span>
+                <span id="clock-seconds" class="text-4xl lg:text-5xl font-bold text-primary">:38</span>
+              </div>
+            </div>
+
+            <!-- Dual Calendar Footprint -->
+            <div class="mt-6 pt-6 border-t border-[#1E4D3E]/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <!-- Masehi -->
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary shadow-inner">
+                  <span class="material-symbols-outlined text-xl">calendar_today</span>
+                </div>
+                <div>
+                  <p class="text-[10px] text-tertiary-container uppercase tracking-wider font-semibold">PENANGGALAN MASEHI</p>
+                  <h2 id="date-masehi" class="text-lg lg:text-xl text-secondary-fixed font-bold tracking-tight">Sabtu, 16 Mei 2026</h2>
+                </div>
+              </div>
+              <!-- Hijriah -->
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary shadow-inner">
+                  <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">dark_mode</span>
+                </div>
+                <div>
+                  <p class="text-[10px] text-tertiary-container uppercase tracking-wider font-semibold">PENANGGALAN HIJRIAH</p>
+                  <h2 id="date-hijriah" class="text-lg lg:text-xl text-primary font-bold italic tracking-tight">28 Dhu al-Qa'dah 1447 H</h2>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Hero Block: Next Prayer Highlight Card -->
+          <div class="col-span-12 lg:col-span-5 bg-surface-container/85 backdrop-blur-md rounded-2xl p-6 lg:p-8 flex flex-col justify-between border border-[#1E4D3E] shadow-xl relative overflow-hidden">
+            <div class="absolute right-4 bottom-4 font-arabic text-8xl lg:text-9xl text-white/[0.04] pointer-events-none select-none" id="tv-next-prayer-arabic">
+              الظهر
+            </div>
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs uppercase tracking-widest text-primary font-bold flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+                  SHOLAT BERIKUTNYA
+                </span>
+                <span class="px-2.5 py-1 rounded-full bg-surface-container-highest text-secondary-fixed text-xs font-semibold">
+                  Wajib 5 Waktu
+                </span>
+              </div>
+              <h2 id="tv-next-prayer-name" class="text-4xl lg:text-6xl font-bold text-secondary-fixed tracking-tight">
+                Dzuhur
+              </h2>
+              <div class="mt-3 flex items-baseline space-x-3">
+                <span id="tv-next-prayer-time" class="text-4xl lg:text-5xl font-extrabold text-primary">11:54</span>
+                <span class="text-xs text-on-surface-variant font-medium">WIB</span>
+              </div>
+            </div>
+
+            <!-- Countdown Chip -->
+            <div class="mt-6 pt-4 border-t border-[#1E4D3E]/60 flex items-center justify-between">
+              <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#52452D]/80 border border-primary/40 text-primary shadow-sm">
+                <span class="material-symbols-outlined text-lg animate-spin" style="animation-duration: 6s;">hourglass_top</span>
+                <span id="tv-next-prayer-diff" class="text-sm font-bold tracking-tight">Tersisa 30 menit lagi</span>
+              </div>
+              <span class="text-xs text-on-surface-variant">Jeda Iqomah: 10 mnt</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5-Prayer Times Strip -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 lg:gap-4">
+          <!-- Subuh -->
+          <div data-prayer-card="subuh" class="bg-surface-container/80 border border-[#1E4D3E] p-4 rounded-xl transition-all">
+            <div class="flex items-center justify-between text-xs text-tertiary-container mb-1">
+              <span class="font-bold">Subuh</span>
+              <span class="font-arabic text-sm opacity-60">الفجر</span>
+            </div>
+            <div class="text-2xl font-bold text-secondary-fixed">04:32</div>
+            <div class="text-[10px] text-outline mt-1">Iqomah: 04:42</div>
+          </div>
+          <!-- Dzuhur -->
+          <div data-prayer-card="dzuhur" class="bg-surface-container-high border-2 border-primary-container p-4 rounded-xl shadow-lg transition-all">
+            <div class="flex items-center justify-between text-xs text-primary mb-1">
+              <span class="font-bold">Dzuhur</span>
+              <span class="font-arabic text-sm opacity-80">الظهر</span>
+            </div>
+            <div class="text-2xl font-bold text-primary">11:54</div>
+            <div class="text-[10px] text-primary/80 mt-1">Iqomah: 12:04</div>
+          </div>
+          <!-- Ashar -->
+          <div data-prayer-card="ashar" class="bg-surface-container/80 border border-[#1E4D3E] p-4 rounded-xl transition-all">
+            <div class="flex items-center justify-between text-xs text-tertiary-container mb-1">
+              <span class="font-bold">Ashar</span>
+              <span class="font-arabic text-sm opacity-60">العصر</span>
+            </div>
+            <div class="text-2xl font-bold text-secondary-fixed">15:18</div>
+            <div class="text-[10px] text-outline mt-1">Iqomah: 15:28</div>
+          </div>
+          <!-- Maghrib -->
+          <div data-prayer-card="maghrib" class="bg-surface-container/80 border border-[#1E4D3E] p-4 rounded-xl transition-all">
+            <div class="flex items-center justify-between text-xs text-tertiary-container mb-1">
+              <span class="font-bold">Maghrib</span>
+              <span class="font-arabic text-sm opacity-60">المغرب</span>
+            </div>
+            <div class="text-2xl font-bold text-secondary-fixed">17:51</div>
+            <div class="text-[10px] text-outline mt-1">Iqomah: 17:58</div>
+          </div>
+          <!-- Isya -->
+          <div data-prayer-card="isya" class="bg-surface-container/80 border border-[#1E4D3E] p-4 rounded-xl transition-all">
+            <div class="flex items-center justify-between text-xs text-tertiary-container mb-1">
+              <span class="font-bold">Isya</span>
+              <span class="font-arabic text-sm opacity-60">العشاء</span>
+            </div>
+            <div class="text-2xl font-bold text-secondary-fixed">19:04</div>
+            <div class="text-[10px] text-outline mt-1">Iqomah: 19:14</div>
+          </div>
+        </div>
+
+        <!-- Bottom Marquee Ticker -->
+        <div class="w-full bg-[#061D15] border border-[#1E4D3E] rounded-xl flex items-center overflow-hidden shadow-lg">
+          <div class="bg-[#D89F48] text-on-primary-container px-4 py-2.5 flex items-center gap-1.5 shrink-0 font-bold text-xs uppercase tracking-wider z-20">
+            <span class="material-symbols-outlined text-[16px]">campaign</span>
+            <span>PENGUMUMAN</span>
+          </div>
+          <div class="flex-1 overflow-hidden py-2 px-4 relative">
+            <div id="tv-marquee-text" class="animate-marquee font-medium text-sm text-secondary-fixed">
+              Khutbah Jumat 22 Mei oleh Ust. Faris Abdullah, M.Ag — Tema: Adab Menuntut Ilmu & Menjaga Kerukunan Jamaah ✦ Ahad, 24 Mei: Penyaluran Sembako Duafa & Yatim di Aula Serbaguna Masjid.
+            </div>
+          </div>
+          <div class="hidden md:flex items-center gap-3 px-4 py-2 text-xs text-outline shrink-0 border-l border-[#1E4D3E]/80 bg-surface-dim">
+            <span>Suhu <b>29°C</b></span>
+            <span>Kelembaban <b>68%</b></span>
+            <span>Kiblat <b>295° NW</b></span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------- -->
+    <!-- VIEW 2: PORTAL JAMAAH (Mobile-First / Responsive)                 -->
+    <!-- ----------------------------------------------------------------- -->
+    <section id="view-jamaah" class="view-section py-6 px-4 max-w-lg mx-auto">
+      <!-- Jumat Pekan Ini Hero Card -->
+      <div class="rounded-2xl bg-gradient-to-b from-surface-container-high to-surface-container border border-[#1E4D3E] p-5 shadow-2xl relative overflow-hidden mb-5">
+        <div class="absolute -top-12 -right-12 w-36 h-36 rounded-full bg-primary/10 blur-2xl pointer-events-none"></div>
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-bold uppercase tracking-wider text-secondary-fixed flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            Jumat Pekan Ini
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full bg-[#52452D] text-primary text-xs font-bold">
+            ⏳ Segera Hadir
+          </span>
+        </div>
+
+        <!-- Khotib Profile Card -->
+        <div class="flex items-center gap-3.5 p-3.5 rounded-xl bg-surface-dim border border-[#1E4D3E]/60 mb-3">
+          <div class="w-14 h-14 rounded-full bg-surface-container-highest border-2 border-primary flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-primary text-3xl">person</span>
+          </div>
+          <div class="min-w-0">
+            <span class="text-[10px] text-primary uppercase font-bold tracking-wider">Khotib Jumat</span>
+            <h2 id="jm-khotib-name" class="font-bold text-lg text-secondary-fixed truncate">Ust. Faris Abdullah, M.Ag</h2>
+            <p id="jm-friday-date" class="text-xs text-on-surface-variant">Jumat, 22 Mei 2026</p>
+          </div>
+        </div>
+
+        <!-- Theme Card -->
+        <div class="p-3 rounded-lg bg-surface-container-high/40 border border-[#1E4D3E]/40 mb-3">
+          <span class="text-[10px] text-outline uppercase font-semibold">Tema Khutbah:</span>
+          <p id="jm-khutbah-theme" class="text-sm font-semibold italic text-secondary-fixed mt-0.5">
+            “Adab Menuntut Ilmu & Menjaga Kerukunan Jamaah”
+          </p>
+        </div>
+
+        <!-- Imam & Bilal Pair -->
+        <div class="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-[#1E4D3E]/60">
+          <div>
+            <span class="text-outline">Imam:</span>
+            <div id="jm-imam-name" class="font-bold text-on-surface truncate">Ust. H. Rahmat Hidayat, Lc</div>
+          </div>
+          <div>
+            <span class="text-outline">Bilal:</span>
+            <div id="jm-bilal-name" class="font-bold text-on-surface truncate">Ust. Ahmad Fauzi</div>
+          </div>
+        </div>
+
+        <!-- Action Share Button -->
+        <div class="mt-4 pt-3 flex gap-2">
+          <button onclick="copyWhatsAppBroadcast()" class="flex-1 py-2.5 rounded-xl bg-primary text-on-primary font-bold text-xs flex items-center justify-center gap-1.5 shadow hover:bg-yellow-400 transition-colors">
+            <span class="material-symbols-outlined text-sm">share</span>
+            <span>Bagikan ke WhatsApp</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Schedule List Section -->
+      <div class="space-y-3">
+        <h3 class="font-bold text-base text-secondary-fixed flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-lg">event_upcoming</span>
+          <span>Jadwal Khotib Mendatang</span>
+        </h3>
+        <div id="jm-schedule-list" class="space-y-3">
+          <!-- Rendered dynamically by app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------- -->
+    <!-- VIEW 3: KONFIRMASI MANDIRI PETUGAS (Distraction-Free)             -->
+    <!-- ----------------------------------------------------------------- -->
+    <section id="view-petugas" class="view-section py-8 px-4 max-w-md mx-auto">
+      <div class="flex flex-col gap-5">
+        <!-- Header Card -->
+        <div class="bg-surface-container rounded-2xl p-4 border border-[#1E4D3E] shadow-xl flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl bg-surface-dim border border-[#1E4D3E] flex items-center justify-center text-primary shrink-0">
+            <span class="material-symbols-outlined text-2xl">verified_user</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-primary uppercase font-bold tracking-wider">Portal Konfirmasi Resmi</span>
+            <h1 class="font-bold text-base text-secondary-fixed">Masjid Jami' Al-Hikmah</h1>
+            <p class="text-xs text-on-surface-variant">Sistem Penugasan Khotib & Bilal</p>
+          </div>
+        </div>
+
+        <!-- Form Card State -->
+        <div id="conf-form-card" class="bg-surface-container rounded-2xl p-5 border border-[#1E4D3E] shadow-2xl space-y-4">
+          <div class="p-3.5 rounded-xl bg-surface-container-high/60 border border-[#1E4D3E]/40">
+            <span class="text-[10px] uppercase font-bold text-primary">Permohonan Tugas</span>
+            <h2 class="text-xl font-bold text-primary mt-1">Assalamu'alaikum Wr. Wb.</h2>
+            <h3 id="conf-ustadz-name" class="font-bold text-base text-secondary-fixed mt-0.5">Ust. Faris Abdullah, M.Ag</h3>
+            <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">
+              Kami memohon kesediaan Ustadz untuk bertugas pada Sholat Jumat di Masjid Jami' Al-Hikmah:
+            </p>
+          </div>
+
+          <!-- Assignment Bento Box -->
+          <div class="bg-surface-dim p-4 rounded-xl border border-[#1E4D3E] space-y-3">
+            <div class="flex justify-between items-center pb-2 border-b border-[#1E4D3E]/60">
+              <div>
+                <span class="text-[10px] uppercase text-outline">Tugas</span>
+                <div class="font-bold text-sm text-primary">Khotib Jumat</div>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] uppercase text-outline">Waktu Hadir</span>
+                <div class="font-bold text-sm text-secondary-fixed">11:30 WIB</div>
+              </div>
+            </div>
+            <div>
+              <span class="text-[10px] uppercase text-outline">Hari & Tanggal</span>
+              <div id="conf-date" class="font-bold text-sm text-on-surface">Jumat, 22 Mei 2026</div>
+            </div>
+            <div>
+              <span class="text-[10px] uppercase text-outline">Tema Usulan DKM</span>
+              <div id="conf-theme" class="text-xs italic text-secondary-fixed">“Adab Menuntut Ilmu & Menjaga Kerukunan Jamaah”</div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-[#1E4D3E]/60 text-xs">
+              <div>Imam: <b id="conf-imam" class="text-on-surface">Ust. H. Rahmat</b></div>
+              <div>Bilal: <b id="conf-bilal" class="text-on-surface">Ust. Ahmad Fauzi</b></div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="space-y-2.5 pt-2">
+            <button onclick="submitKonfirmasiPetugas('Terkonfirmasi')" class="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-[0.99]">
+              <span class="material-symbols-outlined text-lg">check_circle</span>
+              <span>✓ Bismillah, Saya Siap Hadir</span>
+            </button>
+            <button onclick="submitKonfirmasiPetugas('Berhalangan')" class="w-full py-2.5 px-4 rounded-xl bg-surface-container-high border border-red-500/40 text-red-400 hover:bg-red-950/40 font-medium text-xs flex items-center justify-center gap-1.5 transition-colors">
+              <span class="material-symbols-outlined text-base">cancel</span>
+              <span>✕ Mohon Maaf, Berhalangan Hadir</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Receipt Card State (Hidden until confirmed) -->
+        <div id="conf-receipt-card" class="hidden bg-surface-container rounded-2xl p-6 border border-emerald-600/60 shadow-2xl text-center space-y-4">
+          <div class="w-16 h-16 rounded-full bg-emerald-950 border-2 border-emerald-500 text-emerald-400 mx-auto flex items-center justify-center shadow-lg">
+            <span class="material-symbols-outlined text-3xl">check</span>
+          </div>
+          <h2 class="text-xl font-bold text-secondary-fixed">Jazakallahu Khairan</h2>
+          <p class="text-xs text-on-surface-variant leading-relaxed">
+            Konfirmasi kesediaan Anda telah tercatat pada sistem SI-MASJID. Pengurus DKM sangat mengapresiasi kehadiran Ustadz.
+          </p>
+          <div class="p-3 rounded-lg bg-surface-dim border border-[#1E4D3E] text-xs space-y-1">
+            <div class="text-primary font-bold">Masjid Jami' Al-Hikmah</div>
+            <div class="text-outline">Jl. KH. Hasyim Asy'ari, Sukamaju • Jakarta Pusat</div>
+          </div>
+          <a href="https://maps.google.com" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container-high text-primary hover:bg-surface-container-highest text-xs font-semibold border border-[#1E4D3E]">
+            <span class="material-symbols-outlined text-base">directions</span>
+            <span>Buka Petunjuk Arah Google Maps</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------- -->
+    <!-- VIEW 4: DASHBOARD PENGURUS DKM (Admin Portal)                     -->
+    <!-- ----------------------------------------------------------------- -->
+    <section id="view-admin" class="view-section py-6 px-4 sm:px-6 lg:px-10 max-w-7xl mx-auto">
+      <!-- Admin Top Bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#1E4D3E]/60 mb-6">
+        <div>
+          <span class="text-xs uppercase font-bold text-primary tracking-wider">Workspace Pengurus DKM</span>
+          <h1 class="text-2xl lg:text-3xl font-extrabold text-secondary-fixed tracking-tight">Manajemen Penjadwalan</h1>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="handleLogout()" class="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-red-950/40 text-red-300 hover:text-red-200 border border-red-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors">
+            <span class="material-symbols-outlined text-sm">logout</span>
+            <span>Keluar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Stat Counters -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-surface-container p-4 rounded-xl border border-[#1E4D3E] shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs text-outline uppercase font-semibold">Total Petugas</span>
+            <div id="adm-count-petugas" class="text-2xl font-bold text-secondary-fixed mt-1">0</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-surface-container-high text-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">group</span>
+          </div>
+        </div>
+        <div class="bg-surface-container p-4 rounded-xl border border-[#1E4D3E] shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs text-outline uppercase font-semibold">Jadwal Terdaftar</span>
+            <div id="adm-count-jadwal" class="text-2xl font-bold text-secondary-fixed mt-1">0</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-surface-container-high text-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">calendar_month</span>
+          </div>
+        </div>
+        <div class="bg-surface-container p-4 rounded-xl border border-[#1E4D3E] shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs text-outline uppercase font-semibold">Status Pekan Ini</span>
+            <div id="adm-status-pekan" class="text-lg font-bold text-emerald-400 mt-1 truncate">Terkonfirmasi</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-surface-container-high text-emerald-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">verified</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Toolbar -->
+      <div class="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-surface-container-high/60 rounded-xl border border-[#1E4D3E]/60 mb-6">
+        <div class="flex items-center gap-2">
+          <button onclick="openModalJadwal()" class="px-4 py-2 rounded-lg bg-primary hover:bg-yellow-400 text-on-primary font-bold text-xs flex items-center gap-1.5 shadow transition-colors">
+            <span class="material-symbols-outlined text-base">add_circle</span>
+            <span>Tambah Jadwal Baru</span>
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="printA4Mading()" class="px-3.5 py-2 rounded-lg bg-surface-container hover:bg-surface-container-highest text-secondary-fixed border border-[#1E4D3E] font-semibold text-xs flex items-center gap-1.5 transition-colors">
+            <span class="material-symbols-outlined text-base">print</span>
+            <span>Cetak PDF A4 Mading</span>
+          </button>
+          <button onclick="copyWhatsAppBroadcast()" class="px-3.5 py-2 rounded-lg bg-surface-container hover:bg-surface-container-highest text-secondary-fixed border border-[#1E4D3E] font-semibold text-xs flex items-center gap-1.5 transition-colors">
+            <span class="material-symbols-outlined text-base">content_copy</span>
+            <span>Salin Format WA</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Schedule Management Table -->
+      <div class="bg-surface-container rounded-2xl border border-[#1E4D3E] shadow-xl overflow-hidden mb-8">
+        <div class="p-4 border-b border-[#1E4D3E]/60 flex items-center justify-between">
+          <h2 class="font-bold text-base text-secondary-fixed flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-lg">event_note</span>
+            <span>Daftar Penjadwalan Sholat Jumat</span>
+          </h2>
+          <span class="text-xs text-outline">Diperiksa otomatis bebas bentrok</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-surface-dim text-xs uppercase text-tertiary-container border-b border-[#1E4D3E]">
+              <tr>
+                <th class="py-3 px-4">Tanggal Jumat</th>
+                <th class="py-3 px-4">Khotib</th>
+                <th class="py-3 px-4">Tema Khutbah</th>
+                <th class="py-3 px-4">Imam & Bilal</th>
+                <th class="py-3 px-4">Konfirmasi</th>
+                <th class="py-3 px-4 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="adm-table-jadwal" class="divide-y divide-[#1E4D3E]/40">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Master Petugas Table -->
+      <div class="bg-surface-container rounded-2xl border border-[#1E4D3E] shadow-xl overflow-hidden">
+        <div class="p-4 border-b border-[#1E4D3E]/60 flex items-center justify-between">
+          <h2 class="font-bold text-base text-secondary-fixed flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-lg">badge</span>
+            <span>Master Data Petugas (Khotib & Bilal)</span>
+          </h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-surface-dim text-xs uppercase text-tertiary-container border-b border-[#1E4D3E]">
+              <tr>
+                <th class="py-3 px-4">Nama Lengkap</th>
+                <th class="py-3 px-4">Peran</th>
+                <th class="py-3 px-4">No. WhatsApp</th>
+                <th class="py-3 px-4">Asal Lembaga</th>
+                <th class="py-3 px-4 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="adm-table-petugas" class="divide-y divide-[#1E4D3E]/40">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- 3. MODALS                                                             -->
+  <!-- ===================================================================== -->
+
+  <!-- Modal 1: Form Jadwal Pintar (Anti-Bentrok) -->
+  <div id="modal-jadwal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container border border-[#1E4D3E] rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b border-[#1E4D3E]/60 mb-4">
+        <h3 class="font-bold text-lg text-secondary-fixed flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">add_circle</span>
+          <span>Form Jadwal Petugas Jumat</span>
+        </h3>
+        <button onclick="document.getElementById('modal-jadwal').classList.add('hidden')" class="text-outline hover:text-white">✕</button>
+      </div>
+
+      <!-- Realtime Clash Warning Banner -->
+      <div id="clash-warning-box" class="hidden mb-4 p-3 rounded-lg bg-red-950/80 border border-red-500 text-red-200 text-xs">
+        ⚠️ <b>Peringatan Bentrok:</b> Khotib ini sudah dijadwalkan pada tanggal tersebut!
+      </div>
+
+      <form id="form-jadwal" onsubmit="handleSaveJadwalSubmit(event)" class="space-y-4">
+        <input type="hidden" id="inp-id-jadwal"/>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Tanggal Jumat</label>
+          <input type="date" id="inp-tanggal" required onchange="checkClashRealtime()" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Pilih Khotib</label>
+          <select id="inp-khotib" required onchange="checkClashRealtime()" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none">
+            <!-- options populated by JS -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Usulan Tema Khutbah</label>
+          <input type="text" id="inp-tema" placeholder="Cth: Adab Menuntut Ilmu..." class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Pilih Imam</label>
+            <select id="inp-imam" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Pilih Bilal</label>
+            <select id="inp-bilal" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"></select>
+          </div>
+        </div>
+
+        <div class="pt-3 flex justify-end gap-2 border-t border-[#1E4D3E]/60">
+          <button type="button" onclick="document.getElementById('modal-jadwal').classList.add('hidden')" class="px-4 py-2 rounded-lg bg-surface-container-high text-xs font-semibold text-outline hover:text-white">Batal</button>
+          <button type="submit" id="btn-save-jadwal" class="px-5 py-2 rounded-lg bg-primary hover:bg-yellow-400 text-on-primary text-xs font-bold shadow">Simpan Jadwal Bebas Bentrok</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Login Pengurus DKM -->
+  <div id="modal-login" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-surface-container border border-[#1E4D3E] rounded-2xl max-w-sm w-full p-6 shadow-2xl relative text-center">
+      <div class="w-14 h-14 rounded-full bg-surface-dim border-2 border-primary mx-auto flex items-center justify-center text-primary mb-3">
+        <span class="material-symbols-outlined text-3xl">lock</span>
+      </div>
+      <h3 class="font-bold text-lg text-secondary-fixed">Login Pengurus DKM</h3>
+      <p class="text-xs text-on-surface-variant mt-1 mb-4">Masukkan PIN Keamanan untuk mengelola jadwal</p>
+
+      <form onsubmit="handleLoginSubmit(event)" class="space-y-3.5 text-left">
+        <div>
+          <label class="block text-xs font-medium text-outline mb-1">No. WhatsApp / ID</label>
+          <input type="text" id="login-phone" value="admin" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-outline mb-1">PIN Keamanan (6 Digit)</label>
+          <input type="password" id="login-pin" placeholder="Default: 123456" required class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm tracking-widest text-center focus:border-primary outline-none"/>
+          <p class="text-[10px] text-outline mt-1 text-center">Default: <b>123456</b> (Mode Demo)</p>
+        </div>
+        <button type="submit" id="btn-login-submit" class="w-full py-2.5 rounded-xl bg-primary text-on-primary font-bold text-sm shadow hover:bg-yellow-400 transition-colors">
+          Masuk ke Dashboard DKM
+        </button>
+        <button type="button" onclick="closeLoginModal()" class="w-full py-1.5 text-xs text-outline hover:text-white">
+          Batal
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Hidden Print Area for Formal A4 PDF Generation -->
+  <div id="print-area" style="display: none;"></div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="./js/config.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "SI-MASJID Al-Hikmah — Sistem Jadwal Khotib & TV Signage",
+  "short_name": "SI-MASJID",
+  "description": "Sistem Informasi Penjadwalan Khotib, Bilal, & TV Display Signage Masjid berbasis Google Apps Script",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#001710",
+  "theme_color": "#001710",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
