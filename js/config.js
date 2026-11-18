@@ -11,3 +11,4 @@
 // Ganti nilai string di bawah dengan URL Web App Google Apps Script Anda:
 // Contoh: 'https://script.google.com/macros/s/AKfycbx.../exec'
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzNh6KI3TpxTuh3cmY8tDMK44MmAJ0uTecBzAvvMZEqd31Pe9zg2sYwQKw5JhRS5aui/exec';
+
