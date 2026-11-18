@@ -56,6 +56,13 @@
 
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="./css/style.css"/>
+  <style>
+    /* Styling select dropdown options di tema gelap */
+    select option {
+      background-color: #08241b !important;
+      color: #cbe9db !important;
+    }
+  </style>
 </head>
 
 <body class="bg-surface text-on-surface antialiased min-h-screen selection:bg-primary selection:text-on-primary">
@@ -100,7 +107,7 @@
 
       <!-- Right Header Actions (Install PWA + Fullscreen) -->
       <div class="flex items-center gap-2">
-        <!-- PWA Install Button (hidden until prompt triggers) -->
+        <!-- PWA Install Button -->
         <button id="btn-pwa-install" style="display: none;" class="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-bold text-xs flex items-center gap-1.5 shadow-sm hover:bg-yellow-400 transition-colors">
           <span class="material-symbols-outlined text-[16px]">download</span>
           <span>Pasang App</span>
@@ -111,7 +118,7 @@
           <span class="material-symbols-outlined text-[20px]">fullscreen</span>
         </button>
 
-        <!-- Mobile Menu Toggle Button (Drawer/Direct) -->
+        <!-- Mobile Menu Toggle Button -->
         <div class="flex lg:hidden items-center gap-1 bg-surface-dim p-1 rounded-lg border border-[#1E4D3E]/40">
           <button onclick="switchView('tv')" class="p-1.5 rounded text-secondary hover:text-primary text-xs" title="TV Display">🖥️</button>
           <button onclick="switchView('jamaah')" class="p-1.5 rounded text-secondary hover:text-primary text-xs" title="Jamaah">📱</button>
@@ -165,18 +172,33 @@
             </div>
           </div>
 
-          <!-- Live Status Telemetry -->
-          <div class="flex items-center space-x-3">
-            <div class="flex items-center space-x-2 bg-surface-container px-3.5 py-1.5 rounded-full border border-[#1E4D3E]/60 shadow-sm">
+          <!-- Right TV Header Telemetry & Quick Action Controls -->
+          <div class="flex items-center space-x-2.5">
+            <!-- Sound Reminder Toggle Button -->
+            <button id="btn-sound-toggle" onclick="toggleSound()" class="flex items-center space-x-1.5 bg-surface-container px-3 py-1.5 rounded-full border border-[#1E4D3E]/60 shadow-sm text-xs font-semibold hover:border-primary transition-all cursor-pointer" title="Nyalakan/Matikan Suara Bel Pengingat Masuk Waktu Salat">
+              <span class="material-symbols-outlined text-primary text-[18px]" id="icon-sound">volume_up</span>
+              <span id="text-sound" class="text-on-surface">Suara Aktif</span>
+            </button>
+
+            <!-- Mode Khusyuk / Blackout Screen Manual Trigger -->
+            <button onclick="toggleBlackout(true)" title="Pratinjau Mode Layar Khusyuk (Redup Saat Sholat)" class="hidden sm:flex items-center space-x-1 bg-surface-container px-2.5 py-1.5 rounded-full border border-[#1E4D3E]/60 text-secondary hover:text-primary text-xs font-semibold transition-colors">
+              <span class="material-symbols-outlined text-[16px] text-primary">bedtime</span>
+              <span>Mode Sholat</span>
+            </button>
+
+            <!-- QRIS Infaq Trigger Button -->
+            <button onclick="openQrisModal()" class="flex items-center space-x-1 bg-primary text-on-primary px-3 py-1.5 rounded-full font-bold text-xs shadow hover:bg-yellow-400 transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]">qr_code_2</span>
+              <span>QRIS Infaq</span>
+            </button>
+
+            <!-- Live Status Indicator -->
+            <div class="hidden md:flex items-center space-x-2 bg-surface-container px-3 py-1.5 rounded-full border border-[#1E4D3E]/60 shadow-sm">
               <span class="relative flex h-2.5 w-2.5">
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                 <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
               </span>
-              <span class="text-xs text-on-surface tracking-wider font-semibold">SIARAN LANGSUNG TV</span>
-            </div>
-            <div class="hidden sm:flex items-center space-x-2 bg-surface-container-highest px-3 py-1.5 rounded-full text-tertiary text-xs border border-[#1E4D3E]/40">
-              <span class="material-symbols-outlined text-primary text-sm">wifi</span>
-              <span class="text-on-surface-variant font-medium">TERHUBUNG SINKRON</span>
+              <span class="text-xs text-on-surface tracking-wider font-semibold">LIVE TV</span>
             </div>
           </div>
         </div>
@@ -308,23 +330,46 @@
         </div>
 
         <!-- Bottom Marquee Ticker -->
-        <div class="w-full bg-[#061D15] border border-[#1E4D3E] rounded-xl flex items-center overflow-hidden shadow-lg">
-          <div class="bg-[#D89F48] text-on-primary-container px-4 py-2.5 flex items-center gap-1.5 shrink-0 font-bold text-xs uppercase tracking-wider z-20">
-            <span class="material-symbols-outlined text-[16px]">campaign</span>
+        <div class="w-full bg-[#061D15] border-2 border-[#1E4D3E] rounded-2xl flex items-center overflow-hidden shadow-2xl min-h-[64px] sm:min-h-[72px]">
+          <div class="bg-[#D89F48] text-[#3c2f00] px-5 sm:px-6 py-3.5 sm:py-4 flex items-center gap-2 shrink-0 font-extrabold text-sm sm:text-base uppercase tracking-wider z-20 shadow-md">
+            <span class="material-symbols-outlined text-[24px]">campaign</span>
             <span>PENGUMUMAN</span>
           </div>
-          <div class="flex-1 overflow-hidden py-2 px-4 relative">
-            <div id="tv-marquee-text" class="animate-marquee font-medium text-sm text-secondary-fixed">
+          <div class="flex-1 overflow-hidden py-3 px-6 relative flex items-center">
+            <div id="tv-marquee-text" class="animate-marquee font-bold text-lg sm:text-xl lg:text-2xl text-secondary-fixed tracking-wide">
               Khutbah Jumat 22 Mei oleh Ust. Faris Abdullah, M.Ag — Tema: Adab Menuntut Ilmu & Menjaga Kerukunan Jamaah ✦ Ahad, 24 Mei: Penyaluran Sembako Duafa & Yatim di Aula Serbaguna Masjid.
             </div>
           </div>
-          <div class="hidden md:flex items-center gap-3 px-4 py-2 text-xs text-outline shrink-0 border-l border-[#1E4D3E]/80 bg-surface-dim">
-            <span>Suhu <b>29°C</b></span>
-            <span>Kelembaban <b>68%</b></span>
-            <span>Kiblat <b>295° NW</b></span>
+          <div class="hidden md:flex items-center gap-4 px-5 py-3.5 text-xs sm:text-sm text-outline shrink-0 border-l border-[#1E4D3E]/80 bg-surface-dim">
+            <span>Kas: <b id="tv-saldo-kas" class="text-primary font-bold">Rp 42.500.000</b></span>
+            <span>Suhu <b class="text-secondary-fixed">29°C</b></span>
+            <span>Kiblat <b class="text-primary font-bold">295° NW</b></span>
           </div>
         </div>
 
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- FULLSCREEN BLACKOUT / MODE KHUSYUK SAAT SHOLAT                    -->
+      <!-- ================================================================= -->
+      <div id="tv-blackout-screen" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-8 text-center select-none">
+        <!-- Calligraphy -->
+        <div class="font-arabic text-6xl sm:text-7xl lg:text-8xl text-primary drop-shadow-[0_4px_24px_rgba(242,202,80,0.35)] mb-6 animate-pulse">
+          اسْتَوُوا وَاعْتَدِلُوا
+        </div>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-secondary-fixed tracking-wide mb-4">
+          Luruskan & Rapatkan Shaf
+        </h2>
+        <p class="text-base sm:text-xl lg:text-2xl text-on-surface-variant max-w-3xl leading-relaxed mb-8">
+          Demi kekhusyukan dan kesempurnaan ibadah Sholat Berjamaah, harap nonaktifkan atau aktifkan mode hening (silent) pada ponsel Anda.
+        </p>
+        <div class="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-surface-container border border-[#1E4D3E] text-primary text-sm font-semibold shadow-lg">
+          <span class="w-3 h-3 rounded-full bg-primary animate-ping"></span>
+          <span id="tv-blackout-timer">Sholat Berjamaah Sedang Berlangsung</span>
+        </div>
+        <button onclick="toggleBlackout(false)" class="mt-8 text-xs text-outline/50 hover:text-outline underline cursor-pointer">
+          ✕ Keluar dari Mode Sholat
+        </button>
       </div>
     </section>
 
@@ -386,6 +431,39 @@
         </div>
       </div>
 
+      <!-- CARD: Transparansi Kas & QRIS Infaq Digital -->
+      <div class="rounded-2xl bg-surface-container border border-[#1E4D3E] p-4 shadow-xl mb-5">
+        <div class="flex items-center justify-between pb-3 border-b border-[#1E4D3E]/60 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-xl">account_balance_wallet</span>
+            <h3 class="font-bold text-sm text-secondary-fixed">Transparansi Kas & Infaq Masjid</h3>
+          </div>
+          <span class="text-[10px] text-primary uppercase font-bold tracking-wider">Update Terbaru</span>
+        </div>
+
+        <!-- 3 KPI Kas Stats -->
+        <div class="grid grid-cols-3 gap-2 text-center mb-3.5">
+          <div class="bg-surface-dim p-2.5 rounded-xl border border-[#1E4D3E]/40">
+            <span class="text-[10px] text-outline block uppercase font-medium">Saldo Kas</span>
+            <span id="jm-saldo-kas" class="font-extrabold text-sm text-primary">Rp 42.5 jt</span>
+          </div>
+          <div class="bg-surface-dim p-2.5 rounded-xl border border-[#1E4D3E]/40">
+            <span class="text-[10px] text-outline block uppercase font-medium">Infaq Jumat</span>
+            <span id="jm-infaq-jumat" class="font-extrabold text-sm text-emerald-400">Rp 8.7 jt</span>
+          </div>
+          <div class="bg-surface-dim p-2.5 rounded-xl border border-[#1E4D3E]/40">
+            <span class="text-[10px] text-outline block uppercase font-medium">Pengeluaran</span>
+            <span id="jm-pengeluaran" class="font-extrabold text-sm text-red-400">Rp 3.2 jt</span>
+          </div>
+        </div>
+
+        <!-- Button Buka QRIS Infaq -->
+        <button onclick="openQrisModal()" class="w-full py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-primary/40 text-primary font-bold text-xs flex items-center justify-center gap-2 transition-colors">
+          <span class="material-symbols-outlined text-base">qr_code_2</span>
+          <span>Infaq Digital (Scan QRIS / Rekening Bank)</span>
+        </button>
+      </div>
+
       <!-- Schedule List Section -->
       <div class="space-y-3">
         <h3 class="font-bold text-base text-secondary-fixed flex items-center gap-2">
@@ -404,21 +482,38 @@
     <section id="view-petugas" class="view-section py-8 px-4 max-w-md mx-auto">
       <div class="flex flex-col gap-5">
         <!-- Header Card -->
-        <div class="bg-surface-container rounded-2xl p-4 border border-[#1E4D3E] shadow-xl flex items-center gap-3">
-          <div class="w-12 h-12 rounded-xl bg-surface-dim border border-[#1E4D3E] flex items-center justify-center text-primary shrink-0">
-            <span class="material-symbols-outlined text-2xl">verified_user</span>
+        <div class="bg-surface-container rounded-2xl p-4 border border-[#1E4D3E] shadow-xl flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-surface-dim border border-[#1E4D3E] flex items-center justify-center text-primary shrink-0">
+              <span class="material-symbols-outlined text-2xl">verified_user</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-primary uppercase font-bold tracking-wider">Portal Konfirmasi Resmi</span>
+              <h1 class="font-bold text-base text-secondary-fixed">Masjid Jami' Al-Hikmah</h1>
+              <p class="text-xs text-on-surface-variant">Sistem Penugasan Khotib & Bilal</p>
+            </div>
           </div>
-          <div>
-            <span class="text-[10px] text-primary uppercase font-bold tracking-wider">Portal Konfirmasi Resmi</span>
-            <h1 class="font-bold text-base text-secondary-fixed">Masjid Jami' Al-Hikmah</h1>
-            <p class="text-xs text-on-surface-variant">Sistem Penugasan Khotib & Bilal</p>
+          <!-- Current status badge -->
+          <div id="conf-status-badge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#4D3C08] text-[#FDE047] whitespace-nowrap">
+            Menunggu
           </div>
+        </div>
+
+        <!-- Schedule Selector Dropdown (Pilih Penugasan) -->
+        <div class="bg-surface-container/60 p-3 rounded-xl border border-[#1E4D3E]/60 flex items-center justify-between gap-2">
+          <label class="text-xs text-on-surface-variant whitespace-nowrap font-medium">Pilih Jadwal Tugas:</label>
+          <select id="conf-jadwal-selector" onchange="onSelectJadwalKonfirmasi(this.value)" class="flex-1 bg-surface-dim border border-[#1E4D3E] rounded-lg p-1.5 text-xs text-secondary-fixed focus:border-primary outline-none">
+            <!-- Populated dynamically -->
+          </select>
         </div>
 
         <!-- Form Card State -->
         <div id="conf-form-card" class="bg-surface-container rounded-2xl p-5 border border-[#1E4D3E] shadow-2xl space-y-4">
           <div class="p-3.5 rounded-xl bg-surface-container-high/60 border border-[#1E4D3E]/40">
-            <span class="text-[10px] uppercase font-bold text-primary">Permohonan Tugas</span>
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] uppercase font-bold text-primary">Permohonan Tugas</span>
+              <span id="conf-badge-peran" class="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary font-bold">Khotib</span>
+            </div>
             <h2 class="text-xl font-bold text-primary mt-1">Assalamu'alaikum Wr. Wb.</h2>
             <h3 id="conf-ustadz-name" class="font-bold text-base text-secondary-fixed mt-0.5">Ust. Faris Abdullah, M.Ag</h3>
             <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">
@@ -430,8 +525,11 @@
           <div class="bg-surface-dim p-4 rounded-xl border border-[#1E4D3E] space-y-3">
             <div class="flex justify-between items-center pb-2 border-b border-[#1E4D3E]/60">
               <div>
-                <span class="text-[10px] uppercase text-outline">Tugas</span>
-                <div class="font-bold text-sm text-primary">Khotib Jumat</div>
+                <span class="text-[10px] uppercase text-outline">Peran Anda</span>
+                <select id="conf-peran-input" onchange="onConfPeranChange()" class="mt-0.5 bg-surface-container border border-[#1E4D3E] rounded p-1 text-xs font-bold text-primary outline-none">
+                  <option value="khotib">Khotib Jumat</option>
+                  <option value="bilal">Bilal / Muadzin</option>
+                </select>
               </div>
               <div class="text-right">
                 <span class="text-[10px] uppercase text-outline">Waktu Hadir</span>
@@ -452,6 +550,12 @@
             </div>
           </div>
 
+          <!-- Optional Note / Reason Input -->
+          <div>
+            <label class="block text-xs font-medium text-outline mb-1">Catatan Tambahan (Opsional):</label>
+            <input type="text" id="conf-catatan-input" placeholder="Tuliskan kendala / usulan badal / catatan hadir..." class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-xs focus:border-primary outline-none"/>
+          </div>
+
           <!-- Action Buttons -->
           <div class="space-y-2.5 pt-2">
             <button onclick="submitKonfirmasiPetugas('Terkonfirmasi')" class="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-[0.99]">
@@ -465,24 +569,65 @@
           </div>
         </div>
 
-        <!-- Receipt Card State (Hidden until confirmed) -->
-        <div id="conf-receipt-card" class="hidden bg-surface-container rounded-2xl p-6 border border-emerald-600/60 shadow-2xl text-center space-y-4">
+        <!-- Receipt Card State 1: TERKONFIRMASI HADIR (Green Emerald) -->
+        <div id="conf-receipt-ready" class="hidden bg-surface-container rounded-2xl p-6 border-2 border-emerald-500/80 shadow-2xl text-center space-y-4">
           <div class="w-16 h-16 rounded-full bg-emerald-950 border-2 border-emerald-500 text-emerald-400 mx-auto flex items-center justify-center shadow-lg">
-            <span class="material-symbols-outlined text-3xl">check</span>
+            <span class="material-symbols-outlined text-3xl">check_circle</span>
           </div>
-          <h2 class="text-xl font-bold text-secondary-fixed">Jazakallahu Khairan</h2>
+          <div>
+            <span class="px-3 py-1 rounded-full bg-[#164E35] text-[#4ADE80] font-bold text-xs uppercase tracking-wider inline-block mb-2">
+              Status: SIAP HADIR
+            </span>
+            <h2 class="text-xl font-bold text-secondary-fixed">Alhamdulillah, Konfirmasi Diterima</h2>
+            <p class="text-xs text-primary font-semibold mt-0.5">Jazakumullahu Khairan Katsiran</p>
+          </div>
           <p class="text-xs text-on-surface-variant leading-relaxed">
-            Konfirmasi kesediaan Anda telah tercatat pada sistem SI-MASJID. Pengurus DKM sangat mengapresiasi kehadiran Ustadz.
+            Status kehadiran Ustadz telah tercatat resmi di sistem SI-MASJID sebagai <b>SIAP HADIR</b>. Pengurus DKM dan jamaah menantikan kehadiran Ustadz tepat waktu.
           </p>
-          <div class="p-3 rounded-lg bg-surface-dim border border-[#1E4D3E] text-xs space-y-1">
-            <div class="text-primary font-bold">Masjid Jami' Al-Hikmah</div>
-            <div class="text-outline">Jl. KH. Hasyim Asy'ari, Sukamaju • Jakarta Pusat</div>
+          <div class="p-3 rounded-lg bg-surface-dim border border-[#1E4D3E] text-xs space-y-1 text-left">
+            <div class="text-primary font-bold">Waktu Hadir: 11:30 WIB (30 menit sebelum azan)</div>
+            <div class="text-outline">Masjid Jami' Al-Hikmah — Jl. KH. Hasyim Asy'ari, Sukamaju</div>
           </div>
-          <a href="https://maps.google.com" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container-high text-primary hover:bg-surface-container-highest text-xs font-semibold border border-[#1E4D3E]">
-            <span class="material-symbols-outlined text-base">directions</span>
-            <span>Buka Petunjuk Arah Google Maps</span>
-          </a>
+          <div class="flex flex-col gap-2 pt-1">
+            <a href="https://maps.google.com" target="_blank" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-high text-primary hover:bg-surface-container-highest text-xs font-semibold border border-[#1E4D3E]">
+              <span class="material-symbols-outlined text-base">directions</span>
+              <span>Buka Petunjuk Arah Google Maps</span>
+            </a>
+            <button onclick="reopenConfForm()" class="text-xs text-outline hover:text-white underline py-1">
+              Ubah Status / Konfirmasi Ulang
+            </button>
+          </div>
         </div>
+
+        <!-- Receipt Card State 2: BERHALANGAN HADIR (Amber/Red) -->
+        <div id="conf-receipt-absent" class="hidden bg-surface-container rounded-2xl p-6 border-2 border-amber-600/80 shadow-2xl text-center space-y-4">
+          <div class="w-16 h-16 rounded-full bg-rose-950 border-2 border-rose-500 text-rose-400 mx-auto flex items-center justify-center shadow-lg">
+            <span class="material-symbols-outlined text-3xl">event_busy</span>
+          </div>
+          <div>
+            <span class="px-3 py-1 rounded-full bg-[#4C1D1D] text-[#F87171] font-bold text-xs uppercase tracking-wider inline-block mb-2">
+              Status: BERHALANGAN HADIR
+            </span>
+            <h2 class="text-xl font-bold text-secondary-fixed">Konfirmasi Berhalangan Tercatat</h2>
+            <p class="text-xs text-secondary font-semibold mt-0.5">Terima Kasih Atas Pemberitahuannya</p>
+          </div>
+          <p class="text-xs text-on-surface-variant leading-relaxed">
+            Informasi bahwa Ustadz berhalangan hadir telah kami teruskan ke Pengurus DKM / Bidang Peribadatan agar dapat disiapkan ustadz pengganti (<i>badal</i>) secepatnya. Semoga Ustadz senantiasa diberikan kelancaran dan kesehatan.
+          </p>
+          <div id="conf-receipt-note-box" class="hidden p-3 rounded-lg bg-surface-dim border border-red-500/40 text-xs text-rose-300 italic text-left">
+            <!-- Catatan ditampilkan di sini -->
+          </div>
+          <div class="flex flex-col gap-2 pt-1">
+            <a id="btn-wa-dkm" href="https://wa.me/6281234567890" target="_blank" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold shadow">
+              <span class="material-symbols-outlined text-base">chat</span>
+              <span>Hubungi Pengurus DKM via WhatsApp</span>
+            </a>
+            <button onclick="reopenConfForm()" class="text-xs text-primary hover:underline py-1">
+              Ubah Status Menjadi Siap Hadir
+            </button>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -542,6 +687,10 @@
             <span class="material-symbols-outlined text-base">add_circle</span>
             <span>Tambah Jadwal Baru</span>
           </button>
+          <button onclick="openModalKas()" class="px-3.5 py-2 rounded-lg bg-surface-container hover:bg-surface-container-highest text-secondary-fixed border border-[#1E4D3E] font-semibold text-xs flex items-center gap-1.5 transition-colors">
+            <span class="material-symbols-outlined text-base text-primary">account_balance_wallet</span>
+            <span>Kelola Kas & QRIS</span>
+          </button>
         </div>
         <div class="flex items-center gap-2">
           <button onclick="printA4Mading()" class="px-3.5 py-2 rounded-lg bg-surface-container hover:bg-surface-container-highest text-secondary-fixed border border-[#1E4D3E] font-semibold text-xs flex items-center gap-1.5 transition-colors">
@@ -590,6 +739,11 @@
             <span class="material-symbols-outlined text-primary text-lg">badge</span>
             <span>Master Data Petugas (Khotib & Bilal)</span>
           </h2>
+          <!-- Tombol Tambah Petugas Baru -->
+          <button onclick="openModalPetugas()" class="px-3.5 py-1.5 rounded-lg bg-primary hover:bg-yellow-400 text-on-primary font-bold text-xs flex items-center gap-1.5 shadow transition-colors">
+            <span class="material-symbols-outlined text-base">person_add</span>
+            <span>Tambah Petugas Baru</span>
+          </button>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
@@ -599,6 +753,7 @@
                 <th class="py-3 px-4">Peran</th>
                 <th class="py-3 px-4">No. WhatsApp</th>
                 <th class="py-3 px-4">Asal Lembaga</th>
+                <th class="py-3 px-4">Status</th>
                 <th class="py-3 px-4 text-right">Aksi</th>
               </tr>
             </thead>
@@ -618,11 +773,11 @@
 
   <!-- Modal 1: Form Jadwal Pintar (Anti-Bentrok) -->
   <div id="modal-jadwal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-surface-container border border-[#1E4D3E] rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+    <div class="bg-surface-container border border-[#1E4D3E] rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-[#1E4D3E]/60 mb-4">
-        <h3 class="font-bold text-lg text-secondary-fixed flex items-center gap-2">
+        <h3 id="modal-jadwal-title" class="font-bold text-lg text-secondary-fixed flex items-center gap-2">
           <span class="material-symbols-outlined text-primary">add_circle</span>
-          <span>Form Jadwal Petugas Jumat</span>
+          <span>Tambah Jadwal Petugas Jumat</span>
         </h3>
         <button onclick="document.getElementById('modal-jadwal').classList.add('hidden')" class="text-outline hover:text-white">✕</button>
       </div>
@@ -635,9 +790,16 @@
       <form id="form-jadwal" onsubmit="handleSaveJadwalSubmit(event)" class="space-y-4">
         <input type="hidden" id="inp-id-jadwal"/>
 
+        <!-- Tanggal Jumat dengan Shortcut Cepat -->
         <div>
-          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Tanggal Jumat</label>
-          <input type="date" id="inp-tanggal" required onchange="checkClashRealtime()" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-semibold text-on-surface-variant">Tanggal Jumat</label>
+            <div class="flex gap-1.5">
+              <button type="button" onclick="setQuickDate(0)" class="text-[10px] px-2 py-0.5 rounded bg-surface-container-high text-primary hover:bg-surface-container-highest border border-[#1E4D3E]">Jumat Terdekat</button>
+              <button type="button" onclick="setQuickDate(1)" class="text-[10px] px-2 py-0.5 rounded bg-surface-container-high text-primary hover:bg-surface-container-highest border border-[#1E4D3E]">+1 Pekan</button>
+            </div>
+          </div>
+          <input type="date" id="inp-tanggal" required onchange="checkClashRealtime()" style="color-scheme: dark;" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
         </div>
 
         <div>
@@ -649,7 +811,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-on-surface-variant mb-1">Usulan Tema Khutbah</label>
-          <input type="text" id="inp-tema" placeholder="Cth: Adab Menuntut Ilmu..." class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
+          <input type="text" id="inp-tema" placeholder="Cth: Adab Menuntut Ilmu & Menjaga Kerukunan Jamaah..." class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -663,6 +825,26 @@
           </div>
         </div>
 
+        <!-- Status Konfirmasi Manual DKM -->
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Status Khotib</label>
+            <select id="inp-status-khotib" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2 text-on-surface text-xs focus:border-primary outline-none">
+              <option value="Menunggu">Menunggu</option>
+              <option value="Terkonfirmasi">Terkonfirmasi (Siap)</option>
+              <option value="Berhalangan">Berhalangan</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Status Bilal</label>
+            <select id="inp-status-bilal" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2 text-on-surface text-xs focus:border-primary outline-none">
+              <option value="Menunggu">Menunggu</option>
+              <option value="Terkonfirmasi">Terkonfirmasi (Siap)</option>
+              <option value="Berhalangan">Berhalangan</option>
+            </select>
+          </div>
+        </div>
+
         <div class="pt-3 flex justify-end gap-2 border-t border-[#1E4D3E]/60">
           <button type="button" onclick="document.getElementById('modal-jadwal').classList.add('hidden')" class="px-4 py-2 rounded-lg bg-surface-container-high text-xs font-semibold text-outline hover:text-white">Batal</button>
           <button type="submit" id="btn-save-jadwal" class="px-5 py-2 rounded-lg bg-primary hover:bg-yellow-400 text-on-primary text-xs font-bold shadow">Simpan Jadwal Bebas Bentrok</button>
@@ -671,7 +853,69 @@
     </div>
   </div>
 
-  <!-- Modal 2: Login Pengurus DKM -->
+  <!-- Modal 2: Form Master Data Petugas (Tambah / Edit) -->
+  <div id="modal-petugas" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container border border-[#1E4D3E] rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b border-[#1E4D3E]/60 mb-4">
+        <h3 id="modal-petugas-title" class="font-bold text-lg text-secondary-fixed flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">person_add</span>
+          <span>Tambah Petugas Baru</span>
+        </h3>
+        <button onclick="document.getElementById('modal-petugas').classList.add('hidden')" class="text-outline hover:text-white">✕</button>
+      </div>
+
+      <form id="form-petugas" onsubmit="handleSavePetugasSubmit(event)" class="space-y-3.5">
+        <input type="hidden" id="petugas-id"/>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Nama Lengkap & Gelar</label>
+          <input type="text" id="petugas-nama" required placeholder="Cth: Ust. Faris Abdullah, M.Ag" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Peran / Spesialisasi</label>
+            <select id="petugas-peran" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none">
+              <option value="Khotib & Imam">Khotib & Imam</option>
+              <option value="Khotib">Khotib</option>
+              <option value="Imam">Imam</option>
+              <option value="Bilal">Bilal</option>
+              <option value="Muadzin">Muadzin</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Status Keaktifan</label>
+            <select id="petugas-status" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none">
+              <option value="TRUE">Aktif</option>
+              <option value="FALSE">Non-Aktif</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Nomor WhatsApp</label>
+          <input type="tel" id="petugas-wa" required placeholder="Cth: 081234567890" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Asal Lembaga / Ormas / Pesantren</label>
+          <input type="text" id="petugas-asal" placeholder="Cth: MUI Kota / Ponpes Al-Falah" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Catatan Tambahan (Opsional)</label>
+          <input type="text" id="petugas-catatan" placeholder="Cth: Khotib tetap pekan ke-1" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
+        </div>
+
+        <div class="pt-3 flex justify-end gap-2 border-t border-[#1E4D3E]/60">
+          <button type="button" onclick="document.getElementById('modal-petugas').classList.add('hidden')" class="px-4 py-2 rounded-lg bg-surface-container-high text-xs font-semibold text-outline hover:text-white">Batal</button>
+          <button type="submit" id="btn-save-petugas" class="px-5 py-2 rounded-lg bg-primary hover:bg-yellow-400 text-on-primary text-xs font-bold shadow">Simpan Data Petugas</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: Login Pengurus DKM -->
   <div id="modal-login" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-surface-container border border-[#1E4D3E] rounded-2xl max-w-sm w-full p-6 shadow-2xl relative text-center">
       <div class="w-14 h-14 rounded-full bg-surface-dim border-2 border-primary mx-auto flex items-center justify-center text-primary mb-3">
@@ -687,8 +931,8 @@
         </div>
         <div>
           <label class="block text-xs font-medium text-outline mb-1">PIN Keamanan (6 Digit)</label>
-          <input type="password" id="login-pin" placeholder="Default: 123456" required class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm tracking-widest text-center focus:border-primary outline-none"/>
-          <p class="text-[10px] text-outline mt-1 text-center">Default: <b>123456</b> (Mode Demo)</p>
+          <input type="password" id="login-pin" placeholder="Masukkan 6 digit PIN..." required class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm tracking-widest text-center focus:border-primary outline-none"/>
+          <p class="text-[10px] text-outline mt-1 text-center">Gunakan PIN Keamanan Pengurus yang terdaftar</p>
         </div>
         <button type="submit" id="btn-login-submit" class="w-full py-2.5 rounded-xl bg-primary text-on-primary font-bold text-sm shadow hover:bg-yellow-400 transition-colors">
           Masuk ke Dashboard DKM
@@ -697,6 +941,162 @@
           Batal
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal 4: QRIS Infaq & Rekening Donasi -->
+  <div id="modal-qris" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-surface-container border border-[#1E4D3E] rounded-2xl max-w-md w-full p-6 shadow-2xl relative text-center">
+      <div class="flex items-center justify-between pb-3 border-b border-[#1E4D3E]/60 mb-4">
+        <h3 class="font-bold text-lg text-secondary-fixed flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">qr_code_2</span>
+          <span>Infaq & Sedekah Digital</span>
+        </h3>
+        <button onclick="closeQrisModal()" class="text-outline hover:text-white">✕</button>
+      </div>
+
+      <!-- QRIS Code Container -->
+      <div class="bg-white p-4 rounded-2xl shadow-inner max-w-[260px] mx-auto mb-4 border-4 border-primary/30">
+        <img id="qris-image-src" src="https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=00020101021126590014ID.LINKAJA.WWW01189360091100212345670208123456780303UME5204581253033605802ID5919MASJID%20AL%20HIKMAH6013JAKARTA%20PUSAT61051011062070703A016304A1B2" alt="QRIS Infaq Masjid" class="w-full h-auto object-contain rounded-lg"/>
+        <p class="text-[11px] font-bold text-gray-800 mt-2 tracking-wide">NMID: ID1020038291024</p>
+        <p class="text-[10px] text-gray-500">Mendukung BCA, Mandiri, BRI, BSI, GoPay, OVO, Dana</p>
+      </div>
+
+      <!-- Bank Transfer Details with 1-Click Copy -->
+      <div class="bg-surface-dim rounded-xl p-3 border border-[#1E4D3E]/60 text-left mb-4">
+        <div class="text-[11px] text-outline uppercase font-semibold">Transfer Bank Syariah</div>
+        <div class="flex items-center justify-between mt-1">
+          <div>
+            <div id="qris-bank-nama" class="font-bold text-sm text-secondary-fixed">Bank Syariah Indonesia (BSI)</div>
+            <div class="font-mono text-base font-bold text-primary tracking-wider" id="qris-norek">7123-4567-8901</div>
+            <div id="qris-atas-nama" class="text-xs text-on-surface-variant">a.n. MASJID JAMI' AL-HIKMAH</div>
+          </div>
+          <button onclick="copyAccountNumber()" class="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-primary hover:text-on-primary text-primary text-xs font-bold border border-primary/40 transition-colors flex items-center gap-1 cursor-pointer">
+            <span class="material-symbols-outlined text-sm">content_copy</span>
+            <span>Salin</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Konfirmasi WhatsApp Donatur -->
+      <a id="btn-wa-konfirmasi-donasi" href="https://wa.me/6281234567890?text=Assalamualaikum%20Pengurus%20DKM,%20saya%20sudah%20menyalurkan%20infaq/sedekah%20untuk%20Masjid." target="_blank" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow transition-colors">
+        <span class="material-symbols-outlined text-sm">chat</span>
+        <span>Konfirmasi Infaq via WhatsApp Pengurus</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Modal 5: Kelola Saldo Kas & Rekening Donasi (DKM) -->
+  <div id="modal-kas" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container border border-[#1E4D3E] rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b border-[#1E4D3E]/60 mb-4">
+        <h3 class="font-bold text-lg text-secondary-fixed flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">account_balance_wallet</span>
+          <span>Kelola Transparansi Kas & QRIS</span>
+        </h3>
+        <button onclick="document.getElementById('modal-kas').classList.add('hidden')" class="text-outline hover:text-white">✕</button>
+      </div>
+
+      <form id="form-kas" onsubmit="handleSaveKasSubmit(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Saldo Kas Terkini (Rp)</label>
+          <input type="number" id="input-kas-saldo" required placeholder="Cth: 28450000" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Total Infaq Jumat Lalu (Rp)</label>
+            <input type="number" id="input-kas-infaq" required placeholder="Cth: 4620000" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Pengeluaran Terakhir (Rp)</label>
+            <input type="number" id="input-kas-pengeluaran" required placeholder="Cth: 1850000" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
+          </div>
+        </div>
+
+        <div class="border-t border-[#1E4D3E]/40 pt-3">
+          <span class="text-xs font-bold text-primary block mb-2">Informasi Rekening Bank & QRIS</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Nama Bank</label>
+            <input type="text" id="input-bank-nama" placeholder="Bank Syariah Indonesia (BSI)" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Nomor Rekening</label>
+            <input type="text" id="input-bank-rekening" placeholder="7123-4567-8901" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Atas Nama Rekening</label>
+          <input type="text" id="input-bank-atasnama" placeholder="Masjid Jami' Al-Hikmah" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">URL Gambar QRIS (Image URL)</label>
+          <input type="url" id="input-qris-url" placeholder="https://..." class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2.5 text-on-surface text-sm focus:border-primary outline-none"/>
+        </div>
+
+        <div class="pt-3 flex justify-end gap-2 border-t border-[#1E4D3E]/60">
+          <button type="button" onclick="document.getElementById('modal-kas').classList.add('hidden')" class="px-4 py-2 rounded-lg bg-surface-container-high text-xs font-semibold text-outline hover:text-white">Batal</button>
+          <button type="submit" id="btn-save-kas" class="px-5 py-2 rounded-lg bg-primary hover:bg-yellow-400 text-on-primary text-xs font-bold shadow">Simpan Data Kas & Infaq</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 6: Dispatcher WhatsApp Reminder Khotib & Bilal -->
+  <div id="modal-wa-reminder" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container border border-[#1E4D3E] rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b border-[#1E4D3E]/60 mb-4">
+        <h3 class="font-bold text-lg text-secondary-fixed flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-400">send_to_mobile</span>
+          <span>Pengingat WhatsApp Petugas Jumat</span>
+        </h3>
+        <button onclick="document.getElementById('modal-wa-reminder').classList.add('hidden')" class="text-outline hover:text-white">✕</button>
+      </div>
+
+      <input type="hidden" id="wa-remind-jadwal-id"/>
+
+      <div class="bg-surface-dim p-3 rounded-xl border border-[#1E4D3E]/40 mb-3 text-xs">
+        <div class="text-outline">Jadwal Jumat: <strong id="wa-remind-date" class="text-on-surface">...</strong></div>
+        <div class="text-outline mt-0.5">Khotib: <strong id="wa-remind-khotib" class="text-secondary-fixed">...</strong></div>
+        <div class="text-outline mt-0.5">Bilal: <strong id="wa-remind-bilal" class="text-secondary-fixed">...</strong></div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Tujuan Petugas</label>
+          <select id="wa-remind-target" onchange="generateWaReminderPreview()" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2 text-on-surface text-xs focus:border-primary outline-none">
+            <option value="khotib">Khotib (Utama)</option>
+            <option value="bilal">Bilal</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Jenis Pengingat</label>
+          <select id="wa-remind-template" onchange="generateWaReminderPreview()" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-lg p-2 text-on-surface text-xs focus:border-primary outline-none">
+            <option value="h-7">Pengingat H-7 (Konfirmasi Awal)</option>
+            <option value="h-3">Pengingat H-3 (Kesiapan Khutbah)</option>
+            <option value="h-1">Pengingat H-1 (Hadir Esok Hari)</option>
+            <option value="badal">Pemberitahuan Petugas Badal</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-on-surface-variant mb-1">Pratinjau Pesan WhatsApp</label>
+        <textarea id="wa-remind-preview" rows="6" class="w-full bg-surface-dim border border-[#1E4D3E] rounded-xl p-3 text-on-surface font-mono text-xs focus:border-primary outline-none resize-none leading-relaxed"></textarea>
+      </div>
+
+      <div class="pt-3 flex justify-end gap-2 border-t border-[#1E4D3E]/60 mt-3">
+        <button type="button" onclick="document.getElementById('modal-wa-reminder').classList.add('hidden')" class="px-4 py-2 rounded-lg bg-surface-container-high text-xs font-semibold text-outline hover:text-white">Tutup</button>
+        <button type="button" onclick="dispatchWaReminder()" class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow flex items-center gap-1.5 cursor-pointer">
+          <span class="material-symbols-outlined text-sm">send</span>
+          <span>Buka WhatsApp Sekarang</span>
+        </button>
+      </div>
     </div>
   </div>
 
